@@ -27,15 +27,35 @@ mongoose.connect('mongodb://127.0.0.1:27017/rarecart')
     .then(() => console.log('MongoDb connected'))
     .catch(err => console.error(err));
 
-// Test Socket.IO connection
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
-  
-  socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
+
+  // Handle product locking
+  socket.on('lock-product', async (productId) => {
+    const product = await Product.findById(productId);
+    
+    if (!product.isLocked) {
+      product.isLocked = true;
+      product.lockedBy = socket.id;
+      product.lockExpiresAt = new Date(Date.now() + 60000); // 60s lock
+      await product.save();
+      
+      io.emit('product-updated', product);
+      socket.emit('lock-success');
+    } else {
+      socket.emit('lock-failed');
+    }
+  });
+
+  // Handle payment completion
+  socket.on('payment-complete', async (productId) => {
+    await Product.findByIdAndUpdate(productId, {
+      isSold: true,
+      isLocked: false
+    });
+    io.emit('product-sold', productId);
   });
 });
-
 //Start Server
 const PORT = 5000;
 http.listen(PORT, () => console.log(`Server running on port ${PORT}`));
