@@ -14,4 +14,22 @@ router.get('/', async (req, res) => {
   }
 });
 
+// POST create new product
+router.post('/', async (req, res) => {
+  const product = new Product({
+    name: req.body.name,
+    description: req.body.description,
+    price: req.body.price,
+    imageUrl: req.body.imageUrl,
+    dropTime: req.body.dropTime
+  });
+
+  try {
+    const newProduct = await product.save();
+    res.status(201).json(newProduct);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
 module.exports = router;
