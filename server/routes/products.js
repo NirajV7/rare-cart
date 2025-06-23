@@ -14,6 +14,28 @@ router.get('/', async (req, res) => {
   }
 });
 
+// New GET upcoming products
+router.get('/upcoming', async (req, res) => {
+  const currentTime = new Date();
+  
+  try {
+    const upcomingProducts = await Product.find({
+      dropTime: { $gt: currentTime },
+      isSold: false
+    })
+    .sort({ dropTime: 1 }) // Ascending order (soonest first)
+    .select('-__v -createdAt -updatedAt') // Exclude technical fields
+    .limit(50); // Prevent excessive data
+    
+    res.json(upcomingProducts);
+  } catch (err) {
+    res.status(500).json({ 
+      message: "Failed to fetch upcoming products",
+      error: err.message 
+    });
+  }
+});
+
 // POST create new product
 router.post('/', async (req, res) => {
   const product = new Product({
