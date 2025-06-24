@@ -9,6 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const socketIo = require('socket.io');
 const { startLockCleanup } = require('./services/lockService');
+const { startActivationScheduler } = require('./services/activationService');
 
 /* SOCKET SETUP */
 const io = socketIo(server, {
@@ -22,6 +23,9 @@ app.set('io', io);
 
 // Start lock cleanup service
 startLockCleanup(io);
+
+//Start  Activation Scheduler
+startActivationScheduler(io);
 
 /* ======================
    MIDDLEWARE
