@@ -1,4 +1,5 @@
 import React from 'react';
+import CountdownTimer from './CountdownTimer'; 
 
 const ProductCard = ({ product, isLiveTab }) => {
   // Get status for badge
@@ -53,6 +54,13 @@ const ProductCard = ({ product, isLiveTab }) => {
             Buy Now
           </button>
         )}
+        {/* COUNTDOWN TIMER FOR UPCOMING PRODUCTS */}
+      {!isLiveTab && (
+        <div className="mt-4">
+          <CountdownTimer dropTime={new Date(product.dropTime)} />
+        </div>
+      )}
+
       </div>
     </div>
   );

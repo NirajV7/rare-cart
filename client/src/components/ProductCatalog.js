@@ -1,10 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from './ProductCard'; 
 import { getUpcomingProducts, getLiveProducts } from '../services/api';
+import { initSocket, disconnectSocket } from '../services/socket'; 
 
 const ProductCatalog = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [products, setProducts] = useState([]);
+  const [socket, setSocket] = useState(null);
+
+  // ADD SOCKET INITIALIZATION
+  useEffect(() => {
+    const socketInstance = initSocket();
+    setSocket(socketInstance);
+    
+    return () => disconnectSocket();
+  }, []);
+
+  // ADD REAL-TIME UPDATES
+  useEffect(() => {
+    if (!socket) return;
+
+    // Handle product activation (upcoming → live)
+    socket.on('product_activated', (data) => {
+      setProducts(prev => prev.map(p => 
+        p._id === data.productId ? { ...p, isLive: true } : p
+      ));
+    });
+    
+    return () => {
+      socket.off('product_activated');
+    };
+  }, [socket]);
+
 
   useEffect(() => {
     const loadProducts = async () => {
