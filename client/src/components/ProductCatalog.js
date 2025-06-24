@@ -27,8 +27,32 @@ const ProductCatalog = () => {
       ));
     });
     
+    // NEW: Handle lock events
+  socket.on('product_locked', (data) => {
+    setProducts(prev => prev.map(p => 
+      p._id === data.productId ? { ...p, isLocked: true, lockedBy: data.lockedBy } : p
+    ));
+  });
+
+  // NEW: Handle unlock events
+  socket.on('product_unlocked', (data) => {
+    setProducts(prev => prev.map(p => 
+      p._id === data.productId ? { ...p, isLocked: false, lockedBy: null } : p
+    ));
+  });
+
+  // NEW: Handle sold events
+  socket.on('product_sold', (data) => {
+    setProducts(prev => prev.map(p => 
+      p._id === data.productId ? { ...p, isSold: true, isLocked: false } : p
+    ));
+  });
+
     return () => {
       socket.off('product_activated');
+      socket.off('product_locked');
+      socket.off('product_unlocked');
+      socket.off('product_sold');
     };
   }, [socket]);
 
@@ -71,6 +95,7 @@ const ProductCatalog = () => {
             key={product._id} 
             product={product} 
             isLiveTab={activeTab === 'live'}
+            socket={socket}
           />
 
         ))}

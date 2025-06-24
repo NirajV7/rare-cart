@@ -1,7 +1,33 @@
 import React from 'react';
+import { useState } from "react";
 import CountdownTimer from './CountdownTimer'; 
+import LockConfirmation from './LockConfirmation';
+import { lockProduct } from '../services/api'; 
 
-const ProductCard = ({ product, isLiveTab }) => {
+
+const ProductCard = ({ product, isLiveTab, socket }) => {
+
+  const [showLockModal, setShowLockModal] = useState(false);
+  const [lockStatus, setLockStatus] = useState(null); // 'locking', 'locked', 'error'
+
+  const handleBuyClick = async () => {
+    if (!socket || !socket.id) {
+      console.error('Socket not connected');
+      return;
+    }
+    
+    try {
+      setLockStatus('locking');
+      // Attempt to lock the product
+      await lockProduct(product._id, socket.id);
+      setLockStatus('locked');
+      setShowLockModal(true);
+    } catch (error) {
+      setLockStatus('error');
+      console.error('Lock failed:', error.response?.data?.message || error.message);
+    }
+  };
+
   // Get status for badge
   const getStatus = () => {
     if (product.isSold) return 'sold';
@@ -50,10 +76,31 @@ const ProductCard = ({ product, isLiveTab }) => {
         
         {/* Action Button */}
         {isLiveTab && !product.isSold && (
-          <button className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-md font-medium text-white">
-            Buy Now
+          <button onClick={handleBuyClick}
+          disabled={lockStatus === 'locking' || product.isLocked}
+          className={`w-full py-2 px-4 rounded-md font-medium text-white ${
+            lockStatus === 'locking' || product.isLocked 
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : 'bg-blue-600 hover:bg-blue-700'
+          }`}
+        >
+          {product.isLocked 
+            ? (lockStatus === 'locked' ? 'You have locked!' : 'Locked by another user')
+            : lockStatus === 'locking' 
+              ? 'Locking...' 
+              : 'Buy Now'}
           </button>
         )}
+
+        {/* Lock Confirmation Modal */}
+      {showLockModal && socket && (
+        <LockConfirmation 
+          product={product} 
+          socket={socket} 
+          onClose={() => setShowLockModal(false)} 
+        />
+      )}
+
         {/* COUNTDOWN TIMER FOR UPCOMING PRODUCTS */}
       {!isLiveTab && (
         <div className="mt-4">
