@@ -117,5 +117,118 @@ router.get('/:id', async (req, res) => {
     });
   }
 });
+router.post('/:id/lock', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const { socketId } = req.body; // Client's socket ID
+
+    if (!socketId) {
+      return res.status(400).json({ message: 'Socket ID required' });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Validate product state
+    if (!product.isLive) {
+      return res.status(400).json({ message: 'Product is not live' });
+    }
+    if (product.isLocked) {
+      return res.status(409).json({ 
+        message: 'Product already locked',
+        lockedBy: product.lockedBy,
+        lockExpiresAt: product.lockExpiresAt
+      });
+    }
+    if (product.isSold) {
+      return res.status(400).json({ message: 'Product already sold' });
+    }
+
+    // Attempt to lock the product atomically
+    const lockExpiresAt = new Date(Date.now() + 60000); // 60 seconds from now
+    const updatedProduct = await Product.findOneAndUpdate(
+      {
+        _id: productId,
+        isLocked: false, // Only lock if currently unlocked
+        isSold: false
+      },
+      {
+        isLocked: true,
+        lockedBy: socketId,
+        lockExpiresAt
+      },
+      { new: true } // Return updated document
+    );
+
+    if (!updatedProduct) {
+      return res.status(409).json({ message: 'Lock conflict - please try again' });
+    }
+
+    // Broadcast lock event to all clients
+    const io = req.app.get('io');
+    io.emit('product_locked', {
+      productId,
+      lockedBy: socketId,
+      lockExpiresAt
+    });
+
+    res.json({
+      message: 'Product locked successfully',
+      lockExpiresAt,
+      product: updatedProduct
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+router.post('/:id/confirm', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const { socketId } = req.body;
+
+    if (!socketId) {
+      return res.status(400).json({ message: 'Socket ID required' });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Validate lock ownership
+    if (!product.isLocked || product.lockedBy !== socketId) {
+      return res.status(403).json({ message: 'You do not hold the lock' });
+    }
+
+    // Mark as sold
+    const soldProduct = await Product.findByIdAndUpdate(
+      productId,
+      {
+        isLocked: false,
+        isSold: true,
+        soldAt: new Date(),
+        lockedBy: null,
+        lockExpiresAt: null
+      },
+      { new: true }
+    );
+
+    // Broadcast sold event
+    const io = req.app.get('io');
+    io.emit('product_sold', {
+      productId,
+      soldAt: soldProduct.soldAt
+    });
+
+    res.json({
+      message: 'Purchase confirmed successfully',
+      product: soldProduct
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 module.exports = router;
