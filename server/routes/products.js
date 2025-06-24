@@ -16,6 +16,19 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET live products
+router.get('/live', async (req, res) => {
+  try {
+    const liveProducts = await Product.find({
+      isLive: true,
+      isSold: false
+    });
+    res.json(liveProducts);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // New GET upcoming products
 router.get('/upcoming', async (req, res) => {
   const currentTime = new Date();
@@ -23,7 +36,8 @@ router.get('/upcoming', async (req, res) => {
   try {
     const upcomingProducts = await Product.find({
       dropTime: { $gt: currentTime },
-      isSold: false
+      isSold: false,
+      isLive:false
     })
     .sort({ dropTime: 1 }) // Ascending order (soonest first)
     .select('-__v -createdAt -updatedAt') // Exclude technical fields
