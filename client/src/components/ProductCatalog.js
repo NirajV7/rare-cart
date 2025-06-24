@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ProductCard from './ProductCard'; 
 import { getUpcomingProducts, getLiveProducts } from '../services/api';
 
 const ProductCatalog = () => {
@@ -39,10 +40,12 @@ const ProductCatalog = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map(product => (
-          <div key={product._id} className="bg-white rounded-xl shadow-md p-4">
-            <h3 className="font-bold text-lg">{product.name}</h3>
-            <p className="text-gray-600">${product.price.toFixed(2)}</p>
-          </div>
+          <ProductCard 
+            key={product._id} 
+            product={product} 
+            isLiveTab={activeTab === 'live'}
+          />
+
         ))}
       </div>
     </div>
