@@ -1,7 +1,42 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
+const User = require('../models/User');
 const adminAuth = require('../middleware/adminAuth');
+
+// GET user analytics
+router.get('/users', adminAuth, async (req, res) => {
+  try {
+    const users = await User.find().sort({ lastActivity: -1 });
+    
+    // Add VIP status (3+ purchases) and abuser flag (5+ locks, 0 purchases)
+    const processedUsers = users.map(user => ({
+      _id: user._id,
+      sessionId: user.sessionId,
+      lockAttempts: user.lockAttempts,
+      purchases: user.purchases,
+      lastActivity: user.lastActivity,
+      isVIP: user.purchases >= 3,
+      isPotentialAbuser: user.lockAttempts >= 5 && user.purchases === 0
+    }));
+    
+    // Calculate summary stats
+    const totalUsers = users.length;
+    const vipUsers = processedUsers.filter(u => u.isVIP).length;
+    const potentialAbusers = processedUsers.filter(u => u.isPotentialAbuser).length;
+    
+    res.json({
+      summary: {
+        totalUsers,
+        vipUsers,
+        potentialAbusers
+      },
+      users: processedUsers
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 // GET sales analytics
 router.get('/analytics', adminAuth, async (req, res) => {
