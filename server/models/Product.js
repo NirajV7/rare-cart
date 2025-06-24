@@ -1,27 +1,39 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-  name: { 
+  name: {
     type: String,
-    required: true,
+    required: [true, 'Name is required'],
     trim: true
   },
   description: {
     type: String,
-    default: "Limited edition item"
+    default: ''
   },
   price: {
     type: Number,
-    required: true,
-    min: 0
+    required: [true, 'Price is required'],
+    min: [0.01, 'Price must be at least 0.01']
   },
   imageUrl: {
     type: String,
-    default: "/placeholder.jpg"
+    default: '',
+    validate: {
+      validator: v => v === '' || v.startsWith('https://'),
+      message: 'Image URL must be a valid HTTPS link'
+    }
+  },
+  category: {
+    type: String,
+    default: 'general'
   },
   dropTime: {
     type: Date,
-    required: true
+    required: [true, 'Drop time is required'],
+    validate: {
+      validator: v => v > Date.now(),
+      message: 'Drop time must be in the future'
+    }
   },
   isLive: {
     type: Boolean,
@@ -32,19 +44,19 @@ const productSchema = new mongoose.Schema({
     default: false
   },
   lockedBy: {
-    type: String,  // Will store socket ID or user ID later
-    default: null
-  },
-  lockExpiresAt: {
-    type: Date,
+    type: String,
     default: null
   },
   isSold: {
     type: Boolean,
     default: false
+  },
+  soldAt: {
+    type: Date,
+    default: null
   }
 }, {
-  timestamps: true  // Adds createdAt/updatedAt automatically
+  timestamps: true
 });
 
 module.exports = mongoose.model('Product', productSchema);
