@@ -1,0 +1,24 @@
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import AdminNavbar from './AdminNavbar';
+import ProductList from './ProductList';
+import EditProduct from './EditProduct';
+import CreateProduct from './CreateProduct';
+const AdminDashboard = () => {
+  return (
+    <div>
+      <AdminNavbar />
+      <div className="max-w-7xl mx-auto p-4">
+        <Routes>
+          <Route path="products" element={<ProductList />} />
+          <Route path="products/new" element={<CreateProduct />} />
+          <Route path="products/edit/:id" element={<EditProduct />} /> 
+          <Route path="analytics" element={<div>Analytics Coming Soon</div>} />
+          <Route path="users" element={<div>User Management Coming Soon</div>} />
+        </Routes>
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;

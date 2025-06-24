@@ -90,6 +90,16 @@ router.delete('/:id', adminAuth, async (req, res) => {
   }
 });
 
+//Get Admin Products
+router.get('/admin', adminAuth, async (req, res) => {
+  try {
+    const products = await Product.find().sort({ dropTime: -1 });
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // POST create new product
 router.post('/', adminAuth, async (req, res) => {
   const product = new Product({
