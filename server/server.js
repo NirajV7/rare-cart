@@ -7,6 +7,21 @@ const http = require('http');
 const mongoose = require('mongoose');
 const app = express();
 const server = http.createServer(app);
+const socketIo = require('socket.io');
+const { startLockCleanup } = require('./services/lockService');
+
+/* SOCKET SETUP */
+const io = socketIo(server, {
+  cors: {
+    origin: "http://localhost:3000", // Your frontend URL
+    methods: ["GET", "POST"]
+  }
+});
+// Store io instance for use in routes
+app.set('io', io);
+
+// Start lock cleanup service
+startLockCleanup(io);
 
 /* ======================
    MIDDLEWARE
@@ -67,6 +82,16 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error('⚠️ Server error:', err.stack);
   res.status(500).json({ error: 'Internal server error' });
+});
+
+// Socket connection handler
+io.on('connection', (socket) => {
+  console.log(`Client connected: ${socket.id}`);
+  
+  socket.on('disconnect', () => {
+    console.log(`Client disconnected: ${socket.id}`);
+    // Optional: Handle disconnections during lock period
+  });
 });
 
 /* ======================

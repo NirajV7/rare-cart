@@ -54,7 +54,11 @@ const productSchema = new mongoose.Schema({
   soldAt: {
     type: Date,
     default: null
-  }
+  },
+  lockExpiresAt: {
+  type: Date,
+  default: null
+}
 }, {
   timestamps: true
 });
