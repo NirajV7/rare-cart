@@ -63,10 +63,10 @@ mongoose.connection.on('error', err => {
    ====================== */
 // Import route handlers
 const productRoutes = require('./routes/products');
-
+const adminRoutes = require('./routes/admin');
 // Register routes
 app.use('/api/products', productRoutes);
-
+app.use('/api/admin', adminRoutes);
 /* ======================
    HEALTH CHECK ENDPOINT
    ====================== */

@@ -4,6 +4,7 @@ import AdminNavbar from './AdminNavbar';
 import ProductList from './ProductList';
 import EditProduct from './EditProduct';
 import CreateProduct from './CreateProduct';
+import SalesAnalytics from './SalesAnalytics'; 
 const AdminDashboard = () => {
   return (
     <div>
@@ -13,7 +14,7 @@ const AdminDashboard = () => {
           <Route path="products" element={<ProductList />} />
           <Route path="products/new" element={<CreateProduct />} />
           <Route path="products/edit/:id" element={<EditProduct />} /> 
-          <Route path="analytics" element={<div>Analytics Coming Soon</div>} />
+          <Route path="analytics" element={<SalesAnalytics />} /> 
           <Route path="users" element={<div>User Management Coming Soon</div>} />
         </Routes>
       </div>

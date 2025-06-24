@@ -23,6 +23,13 @@ export const getAdminProducts = () =>
     }
   });
 
+export const getSalesAnalytics = (timeRange = 'month') => 
+  axios.get(`${API_BASE}/admin/analytics?range=${timeRange}`, {
+    headers: {
+      'x-admin-key': "your_secure_key_here"
+    }
+  });
+
 export const updateProduct = (id, productData) => 
   axios.patch(`${API_BASE}/products/${id}`, productData, {
     headers: {
