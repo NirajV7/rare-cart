@@ -6,7 +6,8 @@ import { lockProduct } from '../services/api';
 
 
 const ProductCard = ({ product, isLiveTab, socket }) => {
-  const [showLockModal, setShowLockModal] = useState(false);
+  const [showLockModal, setShowLockModal] = useState({ show: false, timeLeft: 0 });
+
   const [lockStatus, setLockStatus] = useState(null); // 'locking', 'locked', 'error'
 
   const handleBuyClick = async () => {
@@ -20,7 +21,7 @@ const ProductCard = ({ product, isLiveTab, socket }) => {
       // Attempt to lock the product
      // ✅ Capture response from lockProduct
       const response = await lockProduct(product._id, socket.id);
-      const { product: updatedProduct, lockTimeInSeconds } = response.data;
+      const { lockTimeInSeconds } = response.data;
 
       const timeLeft = lockTimeInSeconds || 60;
 
