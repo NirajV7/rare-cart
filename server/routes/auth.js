@@ -106,7 +106,8 @@ router.post('/login', [
           id: user.id,
           username: user.username,
           email: user.email,
-          role: user.role
+          role: user.role,
+          purchaseHistory: user.purchaseHistory || []
         } });
       }
     );

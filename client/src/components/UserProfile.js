@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import PurchaseHistoryList from './PurchaseHistoryList';
 
 const UserProfile = () => {
   const { user, logout } = useAuth();
@@ -69,7 +70,7 @@ const UserProfile = () => {
             {activeTab === 'purchases' && (
               <div>
                 <h3 className="text-xl font-bold mb-4">Purchase History</h3>
-                {/* Purchase history would go here */}
+                <PurchaseHistoryList purchases={user?.purchaseHistory || []} />
               </div>
             )}
             
