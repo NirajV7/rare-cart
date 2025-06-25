@@ -80,16 +80,17 @@ const [error, setError] = useState('');
             )}
             
             {activeTab === 'purchases' && (
-              <div>
-                <h3 className="text-xl font-bold mb-4">Purchase History</h3>
-                <PurchaseHistoryList purchases={user?.purchaseHistory || []} />
-              </div>
-            )}
-            
-            {activeTab === 'settings' && (
+  <div>
+    <h3 className="text-xl font-bold mb-4">Purchase History</h3>
+    <PurchaseHistoryList purchases={user?.purchaseHistory || []} />
+  </div>
+)}
+
+{activeTab === 'settings' && (
   <div>
     <h3 className="text-xl font-bold mb-4">Account Settings</h3>
-    
+
+    {/* STATE HOOKS */}
     <form
       onSubmit={async (e) => {
         e.preventDefault();
@@ -102,7 +103,7 @@ const [error, setError] = useState('');
         }
 
         try {
-          await fetch('http://localhost:5000/api/auth/change-password', {
+          const res = await fetch('http://localhost:5000/api/auth/change-password', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -111,46 +112,57 @@ const [error, setError] = useState('');
             body: JSON.stringify({ currentPassword, newPassword })
           });
 
-          setMessage('Password changed successfully');
+          if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.message || 'Password update failed');
+          }
+
+          // Success: Show message and logout after short delay
+          setMessage('Password changed successfully. Logging out...');
+          setTimeout(() => {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+          }, 2000);
+
           setCurrentPassword('');
           setNewPassword('');
           setConfirmPassword('');
         } catch (err) {
-          setError('Failed to update password');
+          setError(err.message || 'Failed to update password');
         }
       }}
+      className="space-y-4 mt-4"
     >
-      <div className="space-y-4">
-        <input
-          type="password"
-          placeholder="Current Password"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-          className="w-full border rounded p-2"
-        />
-        <input
-          type="password"
-          placeholder="New Password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          className="w-full border rounded p-2"
-        />
-        <input
-          type="password"
-          placeholder="Confirm New Password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full border rounded p-2"
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Update Password
-        </button>
-      </div>
+      <input
+        type="password"
+        placeholder="Current Password"
+        value={currentPassword}
+        onChange={(e) => setCurrentPassword(e.target.value)}
+        className="w-full border rounded p-2"
+      />
+      <input
+        type="password"
+        placeholder="New Password"
+        value={newPassword}
+        onChange={(e) => setNewPassword(e.target.value)}
+        className="w-full border rounded p-2"
+      />
+      <input
+        type="password"
+        placeholder="Confirm New Password"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        className="w-full border rounded p-2"
+      />
+      <button
+        type="submit"
+        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Update Password
+      </button>
     </form>
 
+    {/* Feedback messages */}
     {message && <p className="text-green-600 mt-4">{message}</p>}
     {error && <p className="text-red-600 mt-4">{error}</p>}
   </div>
