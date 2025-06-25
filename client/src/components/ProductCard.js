@@ -4,8 +4,12 @@ import CountdownTimer from './CountdownTimer';
 import LockConfirmation from './LockConfirmation';
 import { lockProduct } from '../services/api'; 
 
+import { toast } from 'react-toastify';
+
 
 const ProductCard = ({ product, isLiveTab, socket }) => {
+ 
+
   const [showLockModal, setShowLockModal] = useState({ show: false, timeLeft: 0 });
 
   const [lockStatus, setLockStatus] = useState(null); // 'locking', 'locked', 'error'
@@ -29,11 +33,21 @@ const ProductCard = ({ product, isLiveTab, socket }) => {
       setShowLockModal({ show: true, timeLeft });
       setLockStatus('locked');
       
-    } catch (error) {
-      setLockStatus('error');
-      console.error('Lock failed:', error.response?.data?.message || error.message);
+    }catch (error) {
+    setLockStatus('error');
+
+    const status = error.response?.status;
+    const message = error.response?.data?.message || error.message;
+
+    if (status === 401) {
+      toast.warn("Please login to continue.");
+    } else {
+      toast.error("Something went wrong: " + message);
     }
-  };
+
+    console.error('Lock failed:', message);
+  }
+};
 
   // Get status for badge
   const getStatus = () => {

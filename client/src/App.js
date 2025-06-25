@@ -10,6 +10,8 @@ import  UserProfile  from "./components/UserProfile";
 import  Header  from "./components/Header";
 import ResetPasswordForm from './components/auth/ResetPasswordForm';
 import HomeLanding from './pages/HomeLanding'; // add this
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Inside Routes
 <Route path="/" element={<HomeLanding />} />
@@ -19,6 +21,7 @@ function App() {
     
     <Router>
     <AuthProvider>
+    <ToastContainer position="top-center" autoClose={3000} />
       <div className="min-h-screen bg-gray-50">
       <Header />
         
