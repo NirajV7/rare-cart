@@ -6,7 +6,6 @@ import { lockProduct } from '../services/api';
 
 
 const ProductCard = ({ product, isLiveTab, socket }) => {
-
   const [showLockModal, setShowLockModal] = useState(false);
   const [lockStatus, setLockStatus] = useState(null); // 'locking', 'locked', 'error'
 
@@ -19,9 +18,18 @@ const ProductCard = ({ product, isLiveTab, socket }) => {
     try {
       setLockStatus('locking');
       // Attempt to lock the product
-      await lockProduct(product._id, socket.id);
+     // ✅ Capture response from lockProduct
+      const response = await lockProduct(product._id, socket.id);
+      const { product: updatedProduct } = response.data;
+
+      const lockExpiry = new Date(updatedProduct.lockExpiresAt).getTime();
+      const now = Date.now();
+      const timeLeft = Math.floor((lockExpiry - now) / 1000);
+
+      // Pass lock timer to modal
+      setShowLockModal({ show: true, timeLeft });
       setLockStatus('locked');
-      setShowLockModal(true);
+      
     } catch (error) {
       setLockStatus('error');
       console.error('Lock failed:', error.response?.data?.message || error.message);
@@ -93,11 +101,12 @@ const ProductCard = ({ product, isLiveTab, socket }) => {
         )}
 
         {/* Lock Confirmation Modal */}
-      {showLockModal && socket && (
+      {showLockModal.show && socket && (
         <LockConfirmation 
           product={product} 
           socket={socket} 
-          onClose={() => setShowLockModal(false)} 
+          timeLeft={showLockModal.timeLeft}
+          onClose={() => setShowLockModal({ show: false, timeLeft: 0 })}
         />
       )}
 

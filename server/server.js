@@ -10,11 +10,12 @@ const server = http.createServer(app);
 const socketIo = require('socket.io');
 const { startLockCleanup } = require('./services/lockService');
 const { startActivationScheduler } = require('./services/activationService');
+const cors = require('cors');
 
 /* SOCKET SETUP */
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000", // Your frontend URL
+    origin: "http://localhost:3000",  // Your frontend URL
     methods: ["GET", "POST"]
   }
 });
@@ -32,14 +33,13 @@ startActivationScheduler(io);
    ====================== */
 app.use(express.json()); // Parse JSON request bodies
 
-// CORS Headers - Allow React development server
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
-
+// Use CORS middleware before your routes
+app.use(cors({
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'x-admin-key'],
+  credentials: true
+}));
 /* ======================
    DATABASE CONNECTION
    ====================== */
@@ -63,10 +63,10 @@ mongoose.connection.on('error', err => {
    ====================== */
 // Import route handlers
 const productRoutes = require('./routes/products');
-
+const adminRoutes = require('./routes/admin');
 // Register routes
 app.use('/api/products', productRoutes);
-
+app.use('/api/admin', adminRoutes);
 /* ======================
    HEALTH CHECK ENDPOINT
    ====================== */

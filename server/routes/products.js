@@ -5,7 +5,8 @@ const router = express.Router();
 const Product = require('../models/Product'); // Your model
 const mongoose = require('mongoose');
 const adminAuth = require('../middleware/adminAuth'); 
-
+const trackUser = require('../middleware/trackUser');
+const User = require('../models/User');
 // GET all products
 router.get('/', async (req, res) => {
   try {
@@ -90,6 +91,16 @@ router.delete('/:id', adminAuth, async (req, res) => {
   }
 });
 
+//Get Admin Products
+router.get('/admin', adminAuth, async (req, res) => {
+  try {
+    const products = await Product.find().sort({ dropTime: -1 });
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // POST create new product
 router.post('/', adminAuth, async (req, res) => {
   const product = new Product({
@@ -131,73 +142,89 @@ router.get('/:id', async (req, res) => {
     });
   }
 });
-router.post('/:id/lock', async (req, res) => {
-  try {
-    const productId = req.params.id;
-    const { socketId } = req.body; // Client's socket ID
+router.post('/:id/lock',
+  (req, res, next) => {
+    req.actionType = 'lock';
+    next();
+  },
+  trackUser,
+  async (req, res) => {
+    try {
+      const productId = req.params.id;
+      const { socketId, sessionId } = req.body;
 
-    if (!socketId) {
-      return res.status(400).json({ message: 'Socket ID required' });
-    }
+      if (!socketId || !sessionId) {
+        return res.status(400).json({ message: 'Socket ID and Session ID are required' });
+      }
 
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
+      // ⛔ Abuse Prevention
+      const user = await User.findOne({ sessionId });
+      if (user && user.lockAttempts > 10 && user.purchases === 0) {
+        return res.status(403).json({ message: `Account temporarily restricted ${sessionId}. Please contact support.`
+        });
+      }
 
-    // Validate product state
-    if (!product.isLive) {
-      return res.status(400).json({ message: 'Product is not live' });
-    }
-    if (product.isLocked) {
-      return res.status(409).json({ 
-        message: 'Product already locked',
-        lockedBy: product.lockedBy,
-        lockExpiresAt: product.lockExpiresAt
+      // 🧠 VIP Logic: 2 mins for VIP, else 1 min
+      const lockDuration = user && user.purchases >= 3 ? 120000 : 60000;
+      const lockExpiresAt = new Date(Date.now() + lockDuration);
+
+      const product = await Product.findById(productId);
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+
+      // Product state checks
+      if (!product.isLive) {
+        return res.status(400).json({ message: 'Product is not live' });
+      }
+      if (product.isLocked) {
+        return res.status(409).json({
+          message: 'Product already locked',
+          lockedBy: product.lockedBy,
+          lockExpiresAt: product.lockExpiresAt
+        });
+      }
+      if (product.isSold) {
+        return res.status(400).json({ message: 'Product already sold' });
+      }
+
+      // 🔐 Lock the product atomically
+      const updatedProduct = await Product.findOneAndUpdate(
+        {
+          _id: productId,
+          isLocked: false,
+          isSold: false
+        },
+        {
+          isLocked: true,
+          lockedBy: socketId,
+          lockExpiresAt
+        },
+        { new: true }
+      );
+
+      if (!updatedProduct) {
+        return res.status(409).json({ message: 'Lock conflict - please try again' });
+      }
+
+      res.status(200).json({
+        message: 'Product locked successfully',
+        product: updatedProduct
       });
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Lock failed: ' + err.message });
     }
-    if (product.isSold) {
-      return res.status(400).json({ message: 'Product already sold' });
-    }
-
-    // Attempt to lock the product atomically
-    const lockExpiresAt = new Date(Date.now() + 60000); // 60 seconds from now
-    const updatedProduct = await Product.findOneAndUpdate(
-      {
-        _id: productId,
-        isLocked: false, // Only lock if currently unlocked
-        isSold: false
-      },
-      {
-        isLocked: true,
-        lockedBy: socketId,
-        lockExpiresAt
-      },
-      { new: true } // Return updated document
-    );
-
-    if (!updatedProduct) {
-      return res.status(409).json({ message: 'Lock conflict - please try again' });
-    }
-
-    // Broadcast lock event to all clients
-    const io = req.app.get('io');
-    io.emit('product_locked', {
-      productId,
-      lockedBy: socketId,
-      lockExpiresAt
-    });
-
-    res.json({
-      message: 'Product locked successfully',
-      lockExpiresAt,
-      product: updatedProduct
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
   }
-});
-router.post('/:id/confirm', async (req, res) => {
+);
+
+router.post('/:id/confirm',(req, res, next) => {
+    req.actionType = 'purchase'; // Set action type for tracking
+    next();
+  },
+  trackUser, // Add tracking middleware
+ async (req, res) => {
   try {
     const productId = req.params.id;
     const { socketId } = req.body;
