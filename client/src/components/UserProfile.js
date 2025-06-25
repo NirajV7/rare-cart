@@ -60,7 +60,7 @@ const [error, setError] = useState('');
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
-                Account Settings
+                Password Reset
               </button>
               <button
                 onClick={logout}
@@ -73,11 +73,28 @@ const [error, setError] = useState('');
           
           <div className="md:w-2/3 p-6">
             {activeTab === 'profile' && (
-              <div>
-                <h3 className="text-xl font-bold mb-4">Profile Information</h3>
-                {/* Profile form would go here */}
-              </div>
-            )}
+  <div>
+    <h3 className="text-xl font-bold mb-6 text-gray-800">Profile Information</h3>
+    
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
+        <p className="text-sm text-gray-500">Username</p>
+        <p className="text-lg font-medium text-gray-900">{user?.username || 'N/A'}</p>
+      </div>
+
+      <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
+        <p className="text-sm text-gray-500">Email</p>
+        <p className="text-lg font-medium text-gray-900">{user?.email || 'N/A'}</p>
+      </div>
+
+      <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
+        <p className="text-sm text-gray-500">Role</p>
+        <p className="text-lg font-medium text-gray-900 capitalize">{user?.role || 'user'}</p>
+      </div>
+    </div>
+  </div>
+)}
+
             
             {activeTab === 'purchases' && (
   <div>
@@ -88,7 +105,7 @@ const [error, setError] = useState('');
 
 {activeTab === 'settings' && (
   <div>
-    <h3 className="text-xl font-bold mb-4">Account Settings</h3>
+    <h3 className="text-xl font-bold mb-4">Change Password</h3>
 
     {/* STATE HOOKS */}
     <form
