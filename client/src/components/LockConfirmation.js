@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { confirmPurchase } from '../services/api';
 
+
 const LockConfirmation = ({ product, socket, onClose , timeLeft: initialTimeLeft }) => {
-  const [timeLeft, setTimeLeft] = useState(initialTimeLeft || 60);
+
+  //const [timeLeft, setTimeLeft] = useState(initialTimeLeft || 60);
+  const [timeLeft, setTimeLeft] = useState(initialTimeLeft ?? 60);
   const [isConfirming, setIsConfirming] = useState(false);
   const [error, setError] = useState(null);
 

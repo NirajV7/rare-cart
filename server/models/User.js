@@ -31,6 +31,18 @@ const userSchema = new mongoose.Schema({
     default: Date.now
   },
   lastLogin: Date,
+  lockAttempts: {
+  type: Number,
+  default: 0
+},
+purchases: {
+  type: Number,
+  default: 0
+},
+blockUntil: {
+  type: Date,
+  default: null
+},
   purchaseHistory: [{
     productId: mongoose.Schema.Types.ObjectId,
     productName: String,

@@ -20,11 +20,9 @@ const ProductCard = ({ product, isLiveTab, socket }) => {
       // Attempt to lock the product
      // ✅ Capture response from lockProduct
       const response = await lockProduct(product._id, socket.id);
-      const { product: updatedProduct } = response.data;
+      const { product: updatedProduct, lockTimeInSeconds } = response.data;
 
-      const lockExpiry = new Date(updatedProduct.lockExpiresAt).getTime();
-      const now = Date.now();
-      const timeLeft = Math.floor((lockExpiry - now) / 1000);
+      const timeLeft = lockTimeInSeconds || 60;
 
       // Pass lock timer to modal
       setShowLockModal({ show: true, timeLeft });

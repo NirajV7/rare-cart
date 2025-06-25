@@ -37,7 +37,7 @@ app.use(express.json()); // Parse JSON request bodies
 app.use(cors({
   origin: 'http://localhost:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH', 'OPTIONS'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'x-admin-key'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'x-admin-key','x-auth-token'],
   credentials: true
 }));
 /* ======================
