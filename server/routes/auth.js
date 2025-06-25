@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { body, validationResult } = require('express-validator');
+const authMiddleware = require('../middleware/auth'); 
 
 router.get('/test', (req, res) => {
   res.send('Auth route working!');
@@ -123,6 +124,37 @@ router.post('/login', [
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
+  }
+});
+router.post('/change-password', authMiddleware, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const userId = req.user.id;
+
+  if (!currentPassword || !newPassword || newPassword.length < 6) {
+    return res.status(400).json({ message: 'Invalid input' });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Current password is incorrect' });
+    }
+
+    console.log('Before update:', user.password);
+
+    user.password = newPassword;
+    console.log('Modified:', user.isModified('password')); // should be true
+
+    await user.save();
+
+    console.log('After update:', user.password);
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('Change password error:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
