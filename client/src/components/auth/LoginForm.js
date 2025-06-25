@@ -72,7 +72,14 @@ const LoginForm = () => {
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        
+        <div className="flex justify-end mb-4">
+  <a
+    href="/forgot-password"
+    className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition duration-150"
+  >
+    Forgot password?
+  </a>
+</div>
         <button
           type="submit"
           disabled={isSubmitting}

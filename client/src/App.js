@@ -8,6 +8,7 @@ import SignupForm  from "./components/auth/SignupForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 import  UserProfile  from "./components/UserProfile";
 import  Header  from "./components/Header";
+import ResetPasswordForm from './components/auth/ResetPasswordForm';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Routes>
             <Route path="/" element={<ProductCatalog />} />
             <Route path="/login" element={<LoginForm />} />
+            <Route path="/reset-password" element={<ResetPasswordForm />} />
              <Route path="/signup" element={<SignupForm />} />
             {/* Protected routes */}
   <Route path="/admin/*" element={
