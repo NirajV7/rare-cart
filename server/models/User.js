@@ -1,48 +1,60 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
-  // We'll track users by their session/socket ID
-  sessionId: {
+  username: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
+    trim: true,
+    minlength: 3
   },
-  lockAttempts: {
-    type: Number,
-    default: 0
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
   },
-  purchases: {
-    type: Number,
-    default: 0
+  password: {
+    type: String,
+    required: true,
+    minlength: 6
   },
-  lastActivity: {
-    type: Date,
-    default: Date.now
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
   },
   createdAt: {
     type: Date,
     default: Date.now
-  }
-}, { timestamps: true });
+  },
+  lastLogin: Date,
+  purchaseHistory: [{
+    productId: mongoose.Schema.Types.ObjectId,
+    productName: String,
+    price: Number,
+    purchasedAt: Date
+  }]
+});
 
-// Static method to update user stats
-userSchema.statics.updateUserStats = async function(sessionId, action) {
-  const updateData = { 
-    lastActivity: Date.now(),
-    $inc: {}
-  };
+// Password hashing middleware
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
   
-  if (action === 'lock') {
-    updateData.$inc.lockAttempts = 1;
-  } else if (action === 'purchase') {
-    updateData.$inc.purchases = 1;
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (err) {
+    next(err);
   }
-  
-  return this.findOneAndUpdate(
-    { sessionId },
-    updateData,
-    { upsert: true, new: true }
-  );
+});
+
+// Password verification method
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
 module.exports = mongoose.model('User', userSchema);

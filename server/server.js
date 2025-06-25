@@ -62,9 +62,11 @@ mongoose.connection.on('error', err => {
    ROUTES SETUP
    ====================== */
 // Import route handlers
+const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const adminRoutes = require('./routes/admin');
 // Register routes
+app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/admin', adminRoutes);
 /* ======================
