@@ -74,7 +74,7 @@ const LoginForm = () => {
         </div>
         <div className="flex justify-end mb-4">
   <a
-    href="/forgot-password"
+    href="/reset-password"
     className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition duration-150"
   >
     Forgot password?
