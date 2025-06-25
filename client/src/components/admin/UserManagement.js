@@ -89,39 +89,54 @@ const UserManagement = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {userData.users.map(user => (
-              <tr key={user._id} className={user.isPotentialAbuser ? "bg-red-50" : ""}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {user.sessionId.slice(0, 8)}...{user.sessionId.slice(-4)}
-                </td>
-                <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                  user.lockAttempts >= 5 ? "font-bold text-red-600" : "text-gray-500"
-                }`}>
-                  {user.lockAttempts}
-                </td>
-                <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                  user.purchases >= 3 ? "font-bold text-yellow-600" : "text-gray-500"
-                }`}>
-                  {user.purchases}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(user.lastActivity).toLocaleDateString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {user.isVIP && (
-                    <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
-                      VIP Buyer
-                    </span>
-                  )}
-                  {user.isPotentialAbuser && (
-                    <span className="ml-2 px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
-                      Potential Abuser
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
+  {userData.users.map(user => {
+    const lockAttempts = user.lockAttempts ?? 0;
+    const purchases = user.purchases ?? 0;
+    const displayName = user.email || user.username || (user._id?.slice(0, 8) + '...');
+
+    const lastActivity = user.lastActivity 
+      ? new Date(user.lastActivity).toLocaleDateString()
+      : 'N/A';
+
+    return (
+      <tr key={user._id} className={user.isPotentialAbuser ? "bg-red-50" : ""}>
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+  {displayName}
+</td>
+
+        <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+          lockAttempts >= 5 ? "font-bold text-red-600" : "text-gray-500"
+        }`}>
+          {lockAttempts}
+        </td>
+
+        <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+          purchases >= 3 ? "font-bold text-yellow-600" : "text-gray-500"
+        }`}>
+          {purchases}
+        </td>
+
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+          {lastActivity}
+        </td>
+
+        <td className="px-6 py-4 whitespace-nowrap">
+          {user.isVIP && (
+            <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+              VIP Buyer
+            </span>
+          )}
+          {user.isPotentialAbuser && (
+            <span className="ml-2 px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
+              Potential Abuser
+            </span>
+          )}
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+
         </table>
       </div>
 

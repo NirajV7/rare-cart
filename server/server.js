@@ -37,7 +37,7 @@ app.use(express.json()); // Parse JSON request bodies
 app.use(cors({
   origin: 'http://localhost:3000',
   methods: ['GET', 'POST', 'PUT', 'DELETE','PATCH', 'OPTIONS'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'x-admin-key'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'x-admin-key','x-auth-token'],
   credentials: true
 }));
 /* ======================
@@ -62,9 +62,11 @@ mongoose.connection.on('error', err => {
    ROUTES SETUP
    ====================== */
 // Import route handlers
+const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const adminRoutes = require('./routes/admin');
 // Register routes
+app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/admin', adminRoutes);
 /* ======================

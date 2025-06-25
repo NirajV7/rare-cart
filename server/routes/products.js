@@ -7,6 +7,8 @@ const mongoose = require('mongoose');
 const adminAuth = require('../middleware/adminAuth'); 
 const trackUser = require('../middleware/trackUser');
 const User = require('../models/User');
+const auth = require('../middleware/auth');
+
 // GET all products
 router.get('/', async (req, res) => {
   try {
@@ -143,6 +145,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 router.post('/:id/lock',
+  auth, // ✅ Require logged-in user
   (req, res, next) => {
     req.actionType = 'lock';
     next();
@@ -151,29 +154,47 @@ router.post('/:id/lock',
   async (req, res) => {
     try {
       const productId = req.params.id;
-      const { socketId, sessionId } = req.body;
+      const { socketId } = req.body;
+      const userId = req.user.id;
 
-      if (!socketId || !sessionId) {
-        return res.status(400).json({ message: 'Socket ID and Session ID are required' });
+      if (!socketId) {
+        return res.status(400).json({ message: 'Socket ID is required' });
       }
 
-      // ⛔ Abuse Prevention
-      const user = await User.findOne({ sessionId });
-      if (user && user.lockAttempts > 10 && user.purchases === 0) {
-        return res.status(403).json({ message: `Account temporarily restricted ${sessionId}. Please contact support.`
+      // 🛡️ Fetch user using JWT userId
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ message: 'User not found' });
+
+      const now = new Date();
+      // ⛔ Block check
+      if (user.blockUntil && user.blockUntil > now) {
+        return res.status(403).json({
+          message: `Account blocked until ${user.blockUntil.toLocaleString()}.`
         });
       }
 
-      // 🧠 VIP Logic: 2 mins for VIP, else 1 min
-      const lockDuration = user && user.purchases >= 3 ? 120000 : 60000;
+      // ✅ Track abuse
+      user.lockAttempts = (user.lockAttempts || 0) + 1;
+
+       if (user.lockAttempts > 10 && user.purchases === 0) {
+        user.blockUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 min block
+        await user.save();
+        return res.status(403).json({
+          message: `Account blocked due to repeated misuse. Try again after ${user.blockUntil.toLocaleTimeString()}.`
+        });
+      }
+      await user.save();
+
+
+      // 🧠 VIP Logic
+      const lockDuration = (user.purchaseHistory?.length || 0) >= 3 ? 120000 : 60000;
       const lockExpiresAt = new Date(Date.now() + lockDuration);
+      console.log("User purchase count:", user.purchaseHistory?.length);
+      console.log("Lock duration in ms:", lockDuration);
 
       const product = await Product.findById(productId);
-      if (!product) {
-        return res.status(404).json({ message: 'Product not found' });
-      }
+      if (!product) return res.status(404).json({ message: 'Product not found' });
 
-      // Product state checks
       if (!product.isLive) {
         return res.status(400).json({ message: 'Product is not live' });
       }
@@ -188,7 +209,7 @@ router.post('/:id/lock',
         return res.status(400).json({ message: 'Product already sold' });
       }
 
-      // 🔐 Lock the product atomically
+      // 🔐 Atomic lock
       const updatedProduct = await Product.findOneAndUpdate(
         {
           _id: productId,
@@ -204,72 +225,88 @@ router.post('/:id/lock',
       );
 
       if (!updatedProduct) {
-        return res.status(409).json({ message: 'Lock conflict - please try again' });
+        return res.status(409).json({ message: 'Lock conflict - try again' });
       }
 
       res.status(200).json({
         message: 'Product locked successfully',
-        product: updatedProduct
+        product: updatedProduct,
+        lockTimeInSeconds: lockDuration / 1000 
       });
-
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: 'Lock failed: ' + err.message });
     }
   }
 );
-
-router.post('/:id/confirm',(req, res, next) => {
-    req.actionType = 'purchase'; // Set action type for tracking
+router.post('/:id/confirm',
+  auth, // ✅ Require login
+  (req, res, next) => {
+    req.actionType = 'purchase';
     next();
   },
-  trackUser, // Add tracking middleware
- async (req, res) => {
-  try {
-    const productId = req.params.id;
-    const { socketId } = req.body;
+  trackUser,
+  async (req, res) => {
+    try {
+      const productId = req.params.id;
+      const { socketId } = req.body;
+      const userId = req.user.id;
 
-    if (!socketId) {
-      return res.status(400).json({ message: 'Socket ID required' });
+      if (!socketId) {
+        return res.status(400).json({ message: 'Socket ID is required' });
+      }
+
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ message: 'User not found' });
+
+      const product = await Product.findById(productId);
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+
+      if (!product.isLocked || product.lockedBy !== socketId) {
+        return res.status(403).json({ message: 'You do not hold the lock' });
+      }
+
+      const soldProduct = await Product.findByIdAndUpdate(
+        productId,
+        {
+          isLocked: false,
+          isSold: true,
+          soldAt: new Date(),
+          lockedBy: null,
+          lockExpiresAt: null
+        },
+        { new: true }
+      );
+
+      // Update user's purchase stats
+      user.purchases = (user.purchases || 0) + 1;
+      user.lockAttempts = 0;
+      user.blockUntil = null;
+      user.purchaseHistory.push({
+        productId: soldProduct._id,
+        productName: soldProduct.name,
+        price: soldProduct.price,
+        purchasedAt: new Date()
+      });
+      await user.save();
+
+      const io = req.app.get('io');
+      io.emit('product_sold', {
+        productId,
+        soldAt: soldProduct.soldAt
+      });
+
+      res.json({
+        message: 'Purchase confirmed successfully',
+        product: soldProduct
+      });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
     }
-
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-
-    // Validate lock ownership
-    if (!product.isLocked || product.lockedBy !== socketId) {
-      return res.status(403).json({ message: 'You do not hold the lock' });
-    }
-
-    // Mark as sold
-    const soldProduct = await Product.findByIdAndUpdate(
-      productId,
-      {
-        isLocked: false,
-        isSold: true,
-        soldAt: new Date(),
-        lockedBy: null,
-        lockExpiresAt: null
-      },
-      { new: true }
-    );
-
-    // Broadcast sold event
-    const io = req.app.get('io');
-    io.emit('product_sold', {
-      productId,
-      soldAt: soldProduct.soldAt
-    });
-
-    res.json({
-      message: 'Purchase confirmed successfully',
-      product: soldProduct
-    });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
   }
-});
+);
+
 
 module.exports = router;
