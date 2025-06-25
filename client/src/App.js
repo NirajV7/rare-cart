@@ -7,6 +7,7 @@ import  LoginForm  from './components/auth/LoginForm';
 import SignupForm  from "./components/auth/SignupForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 import  UserProfile  from "./components/UserProfile";
+import  Header  from "./components/Header";
 
 function App() {
   return (
@@ -14,11 +15,7 @@ function App() {
     <Router>
     <AuthProvider>
       <div className="min-h-screen bg-gray-50">
-          <header className="bg-white shadow-sm py-4">
-        <div className="container mx-auto px-4">
-          <h1 className="text-2xl font-bold">RareCart</h1>
-        </div>
-      </header>
+      <Header />
         
         <main className="container mx-auto px-4 py-8">
           <Routes>
