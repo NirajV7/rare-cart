@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext';
 
 const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
-  const avatarLetter = user?.username?.charAt(0)?.toUpperCase() || '?';
+  const avatarLetter = user?.username?.charAt(0).toUpperCase() || '?';
+
 
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const timeoutRef = useRef(null);
@@ -45,7 +46,8 @@ const Header = () => {
             {isDropdownVisible && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 transition-all duration-200">
                 <div className="px-4 py-2 text-sm bg-blue-50 text-blue-800 font-semibold border-b">
-                    👋 Welcome, <span className="font-bold">{user.username}</span>
+                    👋 Welcome, <span>{user?.username || 'Guest'}</span>
+
                     </div>
                 <Link
                   to="/profile"

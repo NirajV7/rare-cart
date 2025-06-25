@@ -49,7 +49,16 @@ router.post('/signup', [
       { expiresIn: '7d' },
       (err, token) => {
         if (err) throw err;
-        res.json({ token });
+        res.json({ 
+  token, 
+  user: {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    purchaseHistory: user.purchaseHistory || []
+  }
+});
       }
     );
   } catch (err) {

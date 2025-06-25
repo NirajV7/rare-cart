@@ -5,7 +5,14 @@ import PurchaseHistoryList from './PurchaseHistoryList';
 const UserProfile = () => {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
-
+// Show spinner while user is undefined (e.g. loading from localStorage)
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-blue-500"></div>
+      </div>
+    );
+  }
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <div className="bg-white rounded-xl shadow-md overflow-hidden">
