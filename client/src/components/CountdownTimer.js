@@ -40,22 +40,24 @@ const CountdownTimer = ({ dropTime }) => {
 
   if (hasDropped) {
     return (
-      <div className="bg-green-50 p-3 rounded-lg text-center">
-        <span className="font-medium text-green-700">Dropped! Refresh to see</span>
+       <div className="bg-green-50 border border-green-200 p-4 rounded-lg text-center shadow-sm">
+        <span className="font-semibold text-green-700">Dropped! Refresh to see</span>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-50 p-3 rounded-lg">
-      <h4 className="text-sm font-medium text-gray-700 mb-2">Drops in:</h4>
-      <div className="flex justify-center space-x-2">
+    <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl shadow-sm">
+      <h4 className="text-sm font-semibold text-blue-700 mb-3 text-center uppercase tracking-wide">
+        Drops In
+      </h4>
+      <div className="flex justify-center gap-3">
         {Object.entries(timeLeft).map(([unit, value]) => (
           <div key={unit} className="flex flex-col items-center">
-            <div className="bg-white border rounded-md w-12 h-12 flex items-center justify-center shadow-sm">
-              <span className="font-bold text-lg">{value.toString().padStart(2, '0')}</span>
+            <div className="bg-white w-12 h-12 rounded-lg flex items-center justify-center text-blue-700 font-extrabold text-lg border border-blue-300 shadow">
+              {value.toString().padStart(2, '0')}
             </div>
-            <span className="text-xs text-gray-500 mt-1">{unit}</span>
+            <span className="text-xs text-blue-500 mt-1 capitalize">{unit}</span>
           </div>
         ))}
       </div>

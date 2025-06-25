@@ -73,35 +73,51 @@ const ProductCatalog = () => {
   }, [activeTab]);
 
   return (
-    <div>
-      <div className="flex border-b mb-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Header Tabs */}
+      <div className="flex justify-center gap-6 mb-8">
         <button
-          className={`py-2 px-4 font-medium ${activeTab === 'upcoming' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
           onClick={() => setActiveTab('upcoming')}
+          className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${
+            activeTab === 'upcoming'
+              ? 'bg-blue-600 text-white shadow-md'
+              : 'bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-600'
+          }`}
         >
           Upcoming Drops
         </button>
         <button
-          className={`py-2 px-4 font-medium ${activeTab === 'live' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'}`}
           onClick={() => setActiveTab('live')}
+          className={`px-6 py-2 rounded-full font-semibold transition duration-200 ${
+            activeTab === 'live'
+              ? 'bg-blue-600 text-white shadow-md'
+              : 'bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-600'
+          }`}
         >
           Live Now
         </button>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map(product => (
-          <ProductCard 
-            key={product._id} 
-            product={product} 
-            isLiveTab={activeTab === 'live'}
-            socket={socket}
-          />
 
-        ))}
+      {/* Product Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {products.length > 0 ? (
+          products.map(product => (
+            <ProductCard
+              key={product._id}
+              product={product}
+              isLiveTab={activeTab === 'live'}
+              socket={socket}
+            />
+          ))
+        ) : (
+          <p className="text-center col-span-full text-gray-500 text-lg py-12">
+            No {activeTab === 'upcoming' ? 'upcoming' : 'live'} drops available at the moment.
+          </p>
+        )}
       </div>
     </div>
   );
 };
+
 
 export default ProductCatalog;
