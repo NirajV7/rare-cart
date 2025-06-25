@@ -11,14 +11,15 @@ router.get('/users', adminAuth, async (req, res) => {
     
     // Add VIP status (3+ purchases) and abuser flag (5+ locks, 0 purchases)
     const processedUsers = users.map(user => ({
-      _id: user._id,
-      sessionId: user.sessionId,
-      lockAttempts: user.lockAttempts,
-      purchases: user.purchases,
-      lastActivity: user.lastActivity,
-      isVIP: user.purchases >= 3,
-      isPotentialAbuser: user.lockAttempts >= 5 && user.purchases === 0
-    }));
+  _id: user._id,
+  username: user.username,
+  email: user.email,
+  lockAttempts: user.lockAttempts || 0,
+  purchases: user.purchases || 0,
+  lastActivity: user.lastActivity,
+  isVIP: (user.purchases || 0) >= 3,
+  isPotentialAbuser: (user.lockAttempts || 0) >= 5 && (user.purchases || 0) === 0
+}));
     
     // Calculate summary stats
     const totalUsers = users.length;
