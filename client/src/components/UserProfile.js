@@ -114,10 +114,21 @@ const [error, setError] = useState('');
         setMessage('');
         setError('');
 
-        if (newPassword !== confirmPassword) {
-          setError('New passwords do not match');
-          return;
-        }
+       // ✅ Validation: All fields required
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setError('All fields are required');
+      return;
+    }
+// ✅ Validation: Password length
+    if (newPassword.length < 6) {
+      setError('New password must be at least 6 characters long');
+      return;
+    }
+    // ✅ Validation: Confirm password match
+    if (newPassword !== confirmPassword) {
+      setError('New passwords do not match');
+      return;
+    }
 
         try {
           const res = await fetch('http://localhost:5000/api/auth/change-password', {
