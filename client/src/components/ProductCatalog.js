@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ProductCard from './ProductCard'; 
 import { getUpcomingProducts, getLiveProducts } from '../services/api';
 import { initSocket, disconnectSocket } from '../services/socket'; 
+import { toast } from 'react-toastify';
 
 const ProductCatalog = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
@@ -40,13 +41,30 @@ const ProductCatalog = () => {
     return prev;
   });
 });
-
+socket.on('notification', (data) => {
+  if (data.message) {
+    switch (data.type) {
+      case 'lock_expired':
+        toast.warn(data.message); // 🟡 Show warning toast
+        break;
+      case 'product_live':
+        toast.success(data.message); // ✅ Show success toast
+        break;
+      default:
+        toast.info(data.message); // ℹ️ Fallback
+    }
+  }
+});
     
     // NEW: Handle lock events
   socket.on('product_locked', (data) => {
     setProducts(prev => prev.map(p => 
       p._id === data.productId ? { ...p, isLocked: true, lockedBy: data.lockedBy } : p
     ));
+     // ✅ Show toast with lockedBy username (if available)
+  if (data.lockedByName) {
+    toast.warning(`🔒 ${data.productName} was locked by ${data.lockedByName}`);
+  }
   });
 
   // NEW: Handle unlock events
@@ -68,6 +86,7 @@ const ProductCatalog = () => {
       socket.off('product_locked');
       socket.off('product_unlocked');
       socket.off('product_sold');
+      socket.off('notification'); // ✅ Cleanup
     };
   }, [socket , activeTab]);
 
