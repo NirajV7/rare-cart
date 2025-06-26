@@ -4,8 +4,12 @@ import CountdownTimer from './CountdownTimer';
 import LockConfirmation from './LockConfirmation';
 import { lockProduct } from '../services/api'; 
 
+import { toast } from 'react-toastify';
+
 
 const ProductCard = ({ product, isLiveTab, socket }) => {
+ 
+
   const [showLockModal, setShowLockModal] = useState({ show: false, timeLeft: 0 });
 
   const [lockStatus, setLockStatus] = useState(null); // 'locking', 'locked', 'error'
@@ -29,11 +33,21 @@ const ProductCard = ({ product, isLiveTab, socket }) => {
       setShowLockModal({ show: true, timeLeft });
       setLockStatus('locked');
       
-    } catch (error) {
-      setLockStatus('error');
-      console.error('Lock failed:', error.response?.data?.message || error.message);
+    }catch (error) {
+    setLockStatus('error');
+
+    const status = error.response?.status;
+    const message = error.response?.data?.message || error.message;
+
+    if (status === 401) {
+      toast.warn("Please login to continue.");
+    } else {
+      toast.error("Something went wrong: " + message);
     }
-  };
+
+    console.error('Lock failed:', message);
+  }
+};
 
   // Get status for badge
   const getStatus = () => {
@@ -57,11 +71,27 @@ const ProductCard = ({ product, isLiveTab, socket }) => {
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
       {/* Product Image */}
       <div className="relative">
-        <img 
-          src={product.imageUrl || 'https://via.placeholder.com/300'} 
-          alt={product.name} 
-          className="w-full h-48 object-cover"
-        />
+        {product.imageUrl ? (
+  <img 
+    src={product.imageUrl} 
+    alt={product.name} 
+    className="w-full h-48 object-cover rounded-t-2xl"
+  />
+) : (
+  <div className="w-full h-48 flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-gray-500 rounded-t-2xl relative overflow-hidden">
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      className="h-12 w-12 mb-2 text-gray-400" 
+      fill="none" 
+      viewBox="0 0 24 24" 
+      stroke="currentColor"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h2a2 2 0 012 2v11h10V9a2 2 0 012-2h2M3 7V5a2 2 0 012-2h14a2 2 0 012 2v2m-6 10l-2-2-2 2m0 0l-2-2-2 2" />
+    </svg>
+    <span className="text-sm font-medium text-gray-500">No Image Available</span>
+  </div>
+)}
+
         
         {/* Status Badge */}
         <span className={`absolute top-2 right-2 px-3 py-1 rounded-full text-sm font-medium ${statusColors[status]}`}>
@@ -71,14 +101,24 @@ const ProductCard = ({ product, isLiveTab, socket }) => {
       
       {/* Product Info */}
       <div className="p-4">
-        <h3 className="font-bold text-lg mb-1">{product.name}</h3>
-        <p className="text-gray-600 text-sm mb-2 line-clamp-2">{product.description}</p>
+        <h3 className="font-bold text-lg mb-1 uppercase">{product.name}</h3>
+        <p className="text-gray-600 text-sm mb-2 line-clamp-2 min-h-[2.5rem]">
+  {product.description || <span className="opacity-0">No description</span>}
+</p>
         
         <div className="flex justify-between items-center mb-3">
-          <span className="font-bold text-lg">${product.price.toFixed(2)}</span>
-          <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
-            {product.category}
-          </span>
+          <span className="text-green-700 bg-green-100 px-2 py-1 rounded-md text-lg font-semibold">
+  ${product.price.toFixed(2)}
+</span>
+         <span
+  className={`inline-block text-xs font-semibold px-3 py-1 rounded-full shadow-sm tracking-wide uppercase ${
+    product.category.toLowerCase() === 'general'
+      ? 'bg-gray-100 text-gray-800'
+      : 'bg-purple-100 text-purple-800'
+  }`}
+>
+  {product.category}
+</span>
         </div>
         
         {/* Action Button */}
