@@ -12,7 +12,12 @@ const CreateProduct = () => {
     navigate('/admin/products');
   };
 
-  return <ProductForm onSubmit={handleCreate} isEditing={false} />;
+  return (
+    <div className="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-6">
+      <ProductForm onSubmit={handleCreate} isEditing={false} />
+    </div>
+  );
 };
+
 
 export default CreateProduct;
