@@ -110,6 +110,7 @@ router.post('/', adminAuth, async (req, res) => {
     description: req.body.description,
     price: req.body.price,
     imageUrl: req.body.imageUrl,
+    category: req.body.category,
     dropTime: req.body.dropTime
   });
 

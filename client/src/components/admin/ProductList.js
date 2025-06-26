@@ -2,7 +2,8 @@ import React from 'react';
 import { useState , useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminProducts, deleteProduct } from '../../services/api';
-
+import { toast } from 'react-toastify';
+import { FaCamera } from 'react-icons/fa'; 
 const ProductList = () => {
     const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,6 +31,7 @@ const ProductList = () => {
       await deleteProduct(id);
       setProducts(products.filter(p => p._id !== id));
       setDeleteConfirm(null);
+      toast.success('Product deleted successfully!');
     } catch (err) {
       setError('Delete failed: ' + (err.response?.data?.message || err.message));
     }
@@ -104,29 +106,41 @@ const ProductList = () => {
               products.map((product) => (
                 <tr key={product._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <img 
-                          className="h-10 w-10 rounded-md object-cover" 
-                          src={product.imageUrl || 'https://via.placeholder.com/100'} 
-                          alt={product.name} 
-                        />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                        <div className="text-sm text-gray-500">{product.category}</div>
-                      </div>
-                    </div>
-                  </td>
+  <div className="flex items-center gap-4">
+    <div
+      className={`flex-shrink-0 w-14 h-14 rounded-md overflow-hidden border 
+        ${product.imageUrl ? 'border-gray-300' : 'border-2 border-dashed border-gray-300 bg-gray-50'}
+        flex items-center justify-center text-gray-400 text-xl`}
+    >
+      {product.imageUrl ? (
+        <img
+          className="w-full h-full object-cover"
+          src={product.imageUrl}
+          alt={product.name}
+        />
+      ) : (
+        <FaCamera className="w-5 h-5 text-gray-400" />
+      )}
+    </div>
+    <div>
+      <div className="text-sm font-semibold text-gray-900">{product.name}</div>
+      <div className="text-xs inline-block mt-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
+        {product.category}
+      </div>
+    </div>
+  </div>
+</td>
+
+
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getStatusBadge(product)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     ${product.price.toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(product.dropTime)}
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 max-w-[160px] truncate">
+  {formatDate(product.dropTime)}
+</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <Link
                       to={`/admin/products/edit/${product._id}`}

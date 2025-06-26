@@ -5,18 +5,20 @@ const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
   // Initialize auth state
   useEffect(() => {
-    const initAuth = async () => {
-      const token = localStorage.getItem('token');
-      const userData = localStorage.getItem('user');
+    const initAuth = () => {
+      const storedToken = localStorage.getItem('token');
+      const storedUser  = localStorage.getItem('user');
       
-      if (token && userData) {
-        setUser(JSON.parse(userData));
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
         setIsAuthenticated(true);
       }
       
@@ -27,9 +29,10 @@ const AuthProvider = ({ children }) => {
   }, []);
 
   // Login function
-  const login = async (token, userData) => {
+  const login = (token, userData) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
+    setToken(token);
     setUser(userData);
     setIsAuthenticated(true);
     navigate('/');
@@ -39,15 +42,17 @@ const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    setToken(null);
     setUser(null);
     setIsAuthenticated(false);
     navigate('/login');
   };
 
   // Signup function
-  const signup = async (token, userData) => {
+  const signup = (token, userData) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
+    setToken(token);
     setUser(userData);
     setIsAuthenticated(true);
     navigate('/');
@@ -57,6 +62,7 @@ const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        token,
         isLoading,
         isAuthenticated,
         login,

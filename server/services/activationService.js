@@ -31,9 +31,10 @@ async function activateProducts(io) {
         if (updatedProduct) {
           // Broadcast activation to all clients
           io.emit('product_activated', {
-            productId: product._id,
-            activatedAt: now
-          });
+  productId: updatedProduct._id,
+  activatedAt: now,
+  product: updatedProduct  // 👈 include full product data
+});
           
           console.log(`Product activated: ${product.name}`);
         }
@@ -48,7 +49,7 @@ async function activateProducts(io) {
 
 function startActivationScheduler(io) {
   // Run every 15 seconds
-  setInterval(() => activateProducts(io), 15000);
+  setInterval(() => activateProducts(io), 3000);
   
   // Run immediately on startup
   activateProducts(io);

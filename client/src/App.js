@@ -12,6 +12,8 @@ import ResetPasswordForm from './components/auth/ResetPasswordForm';
 import HomeLanding from './pages/HomeLanding'; // add this
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import AdminRoute from './components/AdminRoute';
+import AccessDenied from './pages/AccessDenied';
 
 // Inside Routes
 <Route path="/" element={<HomeLanding />} />
@@ -34,10 +36,11 @@ function App() {
              <Route path="/signup" element={<SignupForm />} />
             {/* Protected routes */}
   <Route path="/admin/*" element={
-    <ProtectedRoute>
-      <AdminDashboard />
-    </ProtectedRoute>
-  } />
+  <AdminRoute>
+    <AdminDashboard />
+  </AdminRoute>
+} />
+<Route path="/access-denied" element={<AccessDenied />} />
   
   <Route path="/profile" element={
     <ProtectedRoute>

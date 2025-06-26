@@ -13,7 +13,14 @@ const AdminNavbar = () => {
   return (
     <div className="bg-gray-800 text-white p-4">
       <div className="max-w-7xl mx-auto flex justify-between">
-        <h1 className="text-xl font-bold">Admin Dashboard</h1>
+      <Link
+  to="/admin"
+  className="text-xl font-bold"
+>
+Admin Dashboard
+</Link>
+
+        
         <nav className="flex space-x-4">
           {navItems.map(item => (
             <Link

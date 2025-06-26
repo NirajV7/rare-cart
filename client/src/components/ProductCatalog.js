@@ -22,10 +22,25 @@ const ProductCatalog = () => {
 
     // Handle product activation (upcoming → live)
     socket.on('product_activated', (data) => {
-      setProducts(prev => prev.map(p => 
+  setProducts(prev => {
+    const exists = prev.some(p => p._id === data.productId);
+
+    // If product is already in the list (from upcoming tab), update it
+    if (exists) {
+      return prev.map(p =>
         p._id === data.productId ? { ...p, isLive: true } : p
-      ));
-    });
+      );
+    }
+
+    // If it's a new live product and we're on the live tab, add it
+    if (activeTab === 'live' && data.product) {
+      return [...prev, data.product];
+    }
+
+    return prev;
+  });
+});
+
     
     // NEW: Handle lock events
   socket.on('product_locked', (data) => {
@@ -54,7 +69,7 @@ const ProductCatalog = () => {
       socket.off('product_unlocked');
       socket.off('product_sold');
     };
-  }, [socket]);
+  }, [socket , activeTab]);
 
 
   useEffect(() => {
