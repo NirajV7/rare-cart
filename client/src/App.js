@@ -14,6 +14,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AdminRoute from './components/AdminRoute';
 import AccessDenied from './pages/AccessDenied';
+import MyOrders from './components/MyOrders';
 
 // Inside Routes
 <Route path="/" element={<HomeLanding />} />
@@ -47,7 +48,11 @@ function App() {
       <UserProfile />
     </ProtectedRoute>
   } />
-             
+             <Route path="/my-orders" element={
+  <ProtectedRoute>
+    <MyOrders />
+  </ProtectedRoute>
+} />
           </Routes>
         </main>
       </div>

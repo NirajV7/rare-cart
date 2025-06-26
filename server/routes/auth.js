@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { body, validationResult } = require('express-validator');
 const authMiddleware = require('../middleware/auth'); 
-
+const auth = require('../middleware/auth');
 router.get('/test', (req, res) => {
   res.send('Auth route working!');
 });
@@ -126,6 +126,17 @@ router.post('/login', [
     res.status(500).send('Server error');
   }
 });
+
+router.get('/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 router.post('/change-password', authMiddleware, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   const userId = req.user.id;

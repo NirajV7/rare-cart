@@ -41,6 +41,22 @@ const adminHeader = {
 export const createProduct = (productData) => 
   axios.post(`${API_BASE}/products`, productData, adminHeader);
 
+// services/api.js
+export const fetchCurrentUser = async () => {
+  const token = localStorage.getItem('token');
+  return fetch('http://localhost:5000/api/auth/me', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-auth-token': token
+    }
+  }).then(res => {
+    if (!res.ok) throw new Error('Unauthorized');
+    return res.json();
+  });
+};
+
+
 // For admin product listing (we'll implement fully in next step)
 
 export const getAdminProducts = () => 
