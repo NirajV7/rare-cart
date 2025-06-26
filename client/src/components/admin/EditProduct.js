@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProductDetails, updateProduct } from '../../services/api';
 import ProductForm from './ProductForm';
+import { toast } from 'react-toastify';
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -29,6 +30,7 @@ const EditProduct = () => {
   const handleSubmit = async (formData) => {
     try {
       await updateProduct(id, formData);
+      toast.success('Product updated successfully!');
       navigate('/admin/products');
     } catch (err) {
       setError('Update failed: ' + (err.response?.data?.message || err.message));

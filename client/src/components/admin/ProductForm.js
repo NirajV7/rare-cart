@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import 'flatpickr/dist/themes/material_blue.css';
 import Flatpickr from 'react-flatpickr';
-import { toast } from 'react-toastify';
+
 
 const ProductForm = ({ initialData, onSubmit, isEditing = false }) => {
   const navigate = useNavigate();
@@ -27,7 +27,14 @@ const ProductForm = ({ initialData, onSubmit, isEditing = false }) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
+const dropTimeDate = new Date(formData.dropTime);
+const now = new Date();
 
+if (dropTimeDate <= now) {
+  setError('Drop time must be in the future');
+  setIsSubmitting(false);
+  return;
+}
     try {
       const productData = {
         ...formData,
@@ -35,7 +42,6 @@ const ProductForm = ({ initialData, onSubmit, isEditing = false }) => {
         dropTime: new Date(formData.dropTime).toISOString()
       };
       await onSubmit(productData);
-      toast.success('Product created successfully!');
       navigate('/admin/products');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create product');
