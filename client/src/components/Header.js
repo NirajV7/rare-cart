@@ -49,6 +49,14 @@ const Header = () => {
                     👋 Welcome, <span>{user?.username || 'Guest'}</span>
 
                     </div>
+                    {user?.role === 'admin' && (
+  <Link
+    to="/admin"
+    className="block px-4 py-2 text-sm text-indigo-600 hover:bg-gray-100 font-medium"
+  >
+    ⚙️ Admin Panel
+  </Link>
+)}
                 <Link
                   to="/profile"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -58,6 +66,7 @@ const Header = () => {
                 <Link to="/my-orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
   My Orders
 </Link>
+
                 <button
                   onClick={logout}
                   className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
