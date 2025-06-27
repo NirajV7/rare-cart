@@ -24,7 +24,10 @@ const [error, setError] = useState('');
         <div className="md:flex">
           <div className="md:w-1/3 bg-gray-50 p-6">
             <div className="flex items-center mb-6">
-              <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16" />
+              <div className="w-16 h-16 flex items-center justify-center rounded-xl bg-indigo-600 text-white text-xl font-bold uppercase">
+  {user?.username?.charAt(0)}
+</div>
+
               <div className="ml-4">
                 <h2 className="text-xl font-bold">{user?.username}</h2>
                 <p className="text-gray-600">{user?.email}</p>
