@@ -296,7 +296,8 @@ router.post('/:id/confirm',
         productId: soldProduct._id,
         productName: soldProduct.name,
         price: soldProduct.price,
-        purchasedAt: new Date()
+        purchasedAt: new Date(),
+        imageUrl: soldProduct.imageUrl
       });
       await user.save();
 

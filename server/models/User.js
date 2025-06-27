@@ -47,7 +47,8 @@ blockUntil: {
     productId: mongoose.Schema.Types.ObjectId,
     productName: String,
     price: Number,
-    purchasedAt: Date
+    purchasedAt: Date,
+    imageUrl: String,
   }]
 });
 
