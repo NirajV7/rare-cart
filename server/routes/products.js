@@ -228,6 +228,13 @@ router.post('/:id/lock',
       if (!updatedProduct) {
         return res.status(409).json({ message: 'Lock conflict - try again' });
       }
+      const io = req.app.get('io'); // ✅ FIX
+io.emit('product_locked', {
+  productId: updatedProduct._id,
+  lockedBy: socketId,
+  lockedByName: user.username,      // 👈 added for frontend toast
+  productName: updatedProduct.name  // 👈 added for toast
+});
 
       res.status(200).json({
         message: 'Product locked successfully',

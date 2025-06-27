@@ -35,6 +35,10 @@ async function activateProducts(io) {
   activatedAt: now,
   product: updatedProduct  // 👈 include full product data
 });
+// ✅ Real-time toast
+  io.emit('notification', {
+    message: `${updatedProduct.name} is now live!`
+  });
           
           console.log(`Product activated: ${product.name}`);
         }

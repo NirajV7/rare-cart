@@ -30,6 +30,11 @@ async function releaseExpiredLocks(io) {
           productId: product._id,
           reason: 'lock_expired'
         });
+        // ✅ Broadcast toast-style notification
+        io.emit('notification', {
+          type: 'lock_expired',
+          message: `⏱️ Lock expired for ${unlockedProduct.name}`
+        });
       }
     }
   } catch (err) {
