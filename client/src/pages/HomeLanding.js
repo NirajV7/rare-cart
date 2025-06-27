@@ -8,21 +8,34 @@ const HomeLanding = () => {
   return (
     <div className="bg-white min-h-screen flex flex-col">
       {/* Hero Section */}
-      <section className="bg-blue-50 py-20 px-4 text-center">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-blue-800 mb-4">
-          Welcome to RareCart
-        </h1>
-        <p className="text-gray-700 text-lg mb-6">
-          Buy rare limited-edition items before they're gone. Real-time locking, VIP access, and blazing speed.
-        </p>
-        <div className="flex justify-center space-x-4">
-          <Link
-            to="/live"
-            className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded shadow transition transform hover:scale-105"
-          >
-            🔴 View Drops
-          </Link>
-        </div>
+      <section className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] py-24 px-4 text-center text-white overflow-hidden">
+  {/* Subtle glow in the background */}
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-purple-600/20 via-transparent to-transparent pointer-events-none animate-pulse"></div>
+  
+  {/* Glowing Rings */}
+  <div className="absolute -top-10 left-1/2 w-80 h-80 -translate-x-1/2 bg-purple-500 opacity-10 rounded-full blur-3xl animate-ping" />
+  
+  <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 drop-shadow-lg relative inline-block">
+    Welcome to <span className="text-white">RareCart</span>
+
+    {/* Animated underline pulse */}
+    <span className="block h-1 w-24 bg-gradient-to-r from-purple-400 to-cyan-400 mx-auto mt-3 animate-pulse rounded-full"></span>
+  </h1>
+        <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mt-6 leading-relaxed tracking-wide relative z-10">
+  <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-400">
+    Buy rare limited-edition items before they vanish.
+  </span>{' '}
+  Real-time locking, <span className="text-cyan-300 font-semibold">VIP access</span>, and <span className="text-purple-300 font-semibold">blazing speed</span>.
+</p>
+        <div className="flex justify-center mt-8">
+  <Link
+    to="/live"
+    className="bg-red-700 hover:bg-red-800 text-white font-semibold py-3 px-8 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 tracking-wide"
+  >
+    🚀 View Live Drops
+  </Link>
+</div>
+
       </section>
 
       {/* Why RareCart */}
